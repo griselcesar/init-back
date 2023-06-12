@@ -5,7 +5,7 @@ import {
   getAllUsers,
 } from "../services/user.services.js";
 import { compare } from "bcrypt";
-import {} from "jose";
+import { SignJWT } from "jose";
 
 const getAllUsersController = async (req, res) => {
   const users = await getAllUsers();
@@ -71,7 +71,17 @@ const loginController = async (req, res) => {
   if (!user) return res.status(404).json({ message: "usuario no encontrado" });
   const isValid = await compare(req.body.password, user.password);
   if (!isValid) return res.status(400).json({ message: "password incorrecto" });
-  return res.status(200).json({ message: `bienvenido, ${user.name}` });
+  const { id } = req;
+  const encoder = new TextEncoder();
+  const constructorJWT = new SignJWT({ id });
+  const jwt = await constructorJWT
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuedAt()
+    .setExpirationTime("1h")
+    .sign(encoder.encode(process.env.PRIVATE_KEY));
+  return res
+    .status(200)
+    .json({ message: `bienvenido, ${user.name}`, token: jwt });
 };
 
 export {
