@@ -7,4 +7,8 @@ app.use(express.json());
 app.use(cors("*"));
 app.use(morgan("dev"));
 
+import userRouter from "./routers/users.router.js"
+
+app.use("/users/",userRouter)
+
 export default app;
